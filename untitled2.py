@@ -12,7 +12,9 @@ import plotly.express as px
 # Load the dataset
 @st.cache_data
 def load_data():
-    data = pd.read_csv(r'C:\Users\perla\Desktop\OneDrive\Business Analytics  - AUB\MSBA 325 Fouad\Plotly _ Activity\253e7b1c8f53c3b20d011a5cec87aedc_20240907_120736.csv')
+    # Assuming the CSV file is in the same directory as your app script
+    data = pd.read_csv('253e7b1c8f53c3b20d011a5cec87aedc_20240907_120736.csv')
+    return data
     
     # Filter for 'Food Price Inflation' category
     data = data[data['Item'] == "Food price inflation"]

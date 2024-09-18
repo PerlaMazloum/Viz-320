@@ -12,7 +12,8 @@ import plotly.express as px
 # Load the dataset
 @st.cache_data
 def load_data():
-    data = pd.read_csv('253e7b1c8f53c3b20d011a5cec87aedc_20240907_120736.csv')
+    url = 'https://raw.githubusercontent.com/PerlaMazloum/Viz-320/main/CPI.csv'
+    data = pd.read_csv(url)
     
     # Filter for 'Food Price Inflation' category
     data = data[data['Item'] == "Food price inflation"]

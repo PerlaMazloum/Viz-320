@@ -12,9 +12,7 @@ import plotly.express as px
 # Load the dataset
 @st.cache_data
 def load_data():
-    # Replace 'username', 'repository', 'branch', and 'filename.csv' with your actual GitHub info
-    url = 'https://github.com/PerlaMazloum/Viz-320/blob/main/253e7b1c8f53c3b20d011a5cec87aedc_20240907_120736.csv'
-    data = pd.read_csv(url)
+    data = pd.read_csv('253e7b1c8f53c3b20d011a5cec87aedc_20240907_120736.csv')
     
     # Filter for 'Food Price Inflation' category
     data = data[data['Item'] == "Food price inflation"]

@@ -47,19 +47,14 @@ year_range = st.sidebar.slider("Select Year Range", int(df['Year'].min()), int(d
 month_options = df['Month'].unique()
 selected_month = st.sidebar.multiselect("Select Month(s)", month_options, default=month_options)
 
-# CPI Value Range slider
-min_cpi, max_cpi = st.sidebar.slider("Select CPI Value Range", float(df['Value'].min()), float(df['Value'].max()), (float(df['Value'].min()), float(df['Value'].max())))
-
 # Chart type selector
 chart_type = st.sidebar.selectbox("Select Chart Type", ['Line Chart', 'Bar Chart', 'Area Chart', 'Box Plot', 'Pie Chart'])
 
 # Filter data based on the selections
-filtered_data = df[(df['Year'].between(year_range[0], year_range[1])) & 
-                   (df['Month'].isin(selected_month)) & 
-                   (df['Value'].between(min_cpi, max_cpi))]
+filtered_data = df[(df['Year'].between(year_range[0], year_range[1])) & (df['Month'].isin(selected_month))]
 
 # Customized context based on the chart type
-st.subheader(f"Food Price Inflation Data from {year_range[0]} to {year_range[1]} (CPI Range: {min_cpi:.2f} to {max_cpi:.2f})")
+st.subheader(f"Food Price Inflation Data from {year_range[0]} to {year_range[1]}")
 fig = None  # Initialize `fig` to avoid NameError
 
 # Add Interactive Tooltips for each chart type
@@ -69,7 +64,7 @@ if chart_type == 'Line Chart':
     """)
     fig = px.line(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
                   labels={'EndDate': 'Date', 'Value': 'CPI Value'}, markers=True,
-                  animation_frame='Year', range_y=[min_cpi, max_cpi])
+                  animation_frame='Year')
     fig.update_traces(hovertemplate='<b>Date</b>: %{x}<br><b>CPI Value</b>: %{y}')
     
 elif chart_type == 'Bar Chart':
@@ -86,7 +81,7 @@ elif chart_type == 'Area Chart':
     """)
     fig = px.area(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
                   labels={'EndDate': 'Date', 'Value': 'CPI Value'}, 
-                  animation_frame='Year', range_y=[min_cpi, max_cpi])
+                  animation_frame='Year')
     fig.update_traces(hovertemplate='<b>Date</b>: %{x}<br><b>CPI Value</b>: %{y}')
 
 elif chart_type == 'Box Plot':
@@ -142,7 +137,6 @@ else:
 # Key Insights Section
 st.subheader("Key Insights:")
 st.write(f"""
-- **CPI Range Filtering**: The data displayed is filtered to show only CPI values between {min_cpi:.2f} and {max_cpi:.2f}. This allows you to focus on specific ranges of inflation.
 - **Animated Trends**: For line and area charts, the animation feature allows you to observe how food price inflation evolves over the years, providing a dynamic view of inflation trends.
 - **Long-term Trend**: Over the selected years, you can observe whether food price inflation has been gradually rising, stabilizing, or fluctuating. This can be correlated with external factors such as economic downturns, global events, or changes in food supply.
 - **Seasonal Patterns**: By focusing on specific months, such as peak harvest or holiday seasons, you can explore how food prices behave annually. Typically, inflationary pressures may rise during certain months due to higher demand or supply chain constraints.

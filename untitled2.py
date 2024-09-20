@@ -48,21 +48,26 @@ year_range = st.sidebar.slider("Select Year Range", int(df['Year'].min()), int(d
 month_options = df['Month'].unique()
 selected_month = st.sidebar.multiselect("Select Month(s)", month_options, default=month_options)
 
+# CPI Value Range slider
+min_cpi, max_cpi = st.sidebar.slider("Select CPI Value Range", float(df['Value'].min()), float(df['Value'].max()), (float(df['Value'].min()), float(df['Value'].max())))
+
 # Chart type selector
 chart_type = st.sidebar.selectbox("Select Chart Type", ['Line Chart', 'Bar Chart', 'Area Chart', 'Box Plot', 'Pie Chart'])
 
 # Filter data based on the selections
-filtered_data = df[(df['Year'].between(year_range[0], year_range[1])) & (df['Month'].isin(selected_month))]
+filtered_data = df[(df['Year'].between(year_range[0], year_range[1])) & 
+                   (df['Month'].isin(selected_month)) & 
+                   (df['Value'].between(min_cpi, max_cpi))]
 
 # Customized context based on the chart type
-st.subheader(f"Food Price Inflation Data from {year_range[0]} to {year_range[1]}")
+st.subheader(f"Food Price Inflation Data from {year_range[0]} to {year_range[1]} (CPI Range: {min_cpi:.2f} to {max_cpi:.2f})")
 fig = None  # Initialize `fig` to avoid NameError
 
 # Add Interactive Tooltips for each chart type
 if chart_type == 'Line Chart':
     st.write("""
-    The **line chart** below shows the food price inflation trends over time. Line charts are ideal for observing trends and fluctuations in food prices, 
-    helping you visualize how inflation has progressed across different months and years. This chart will highlight both subtle and major shifts in CPI values.
+    The **line chart** below shows the food price inflation trends over time, filtered by the selected CPI value range. 
+    Line charts are ideal for observing trends and fluctuations in food prices, helping you visualize how inflation has progressed across different months and years.
     """)
     fig = px.line(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
                   labels={'EndDate': 'Date', 'Value': 'CPI Value'}, markers=True)
@@ -70,8 +75,8 @@ if chart_type == 'Line Chart':
     
 elif chart_type == 'Bar Chart':
     st.write("""
-    The **bar chart** provides a comparison of food price inflation values over the selected period. Bar charts are useful when comparing CPI values for different time frames, 
-    making it easy to see which months or years have experienced higher inflation. The height of each bar reflects the magnitude of the price increase.
+    The **bar chart** provides a comparison of food price inflation values over the selected period, filtered by the selected CPI value range. 
+    Bar charts are useful when comparing CPI values for different time frames, making it easy to see which months or years have experienced higher inflation.
     """)
     fig = px.bar(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
                  labels={'EndDate': 'Date', 'Value': 'CPI Value'})
@@ -79,8 +84,8 @@ elif chart_type == 'Bar Chart':
 
 elif chart_type == 'Area Chart':
     st.write("""
-    The **area chart** below shows the cumulative food price inflation over time. It is particularly useful for showing the total inflationary pressure built over the years. 
-    This type of chart emphasizes the magnitude of the inflation, making it easier to see which time periods contributed the most to cumulative price increases.
+    The **area chart** below shows the cumulative food price inflation over time, filtered by the selected CPI value range. 
+    It emphasizes the magnitude of the inflation, making it easier to see which time periods contributed the most to cumulative price increases.
     """)
     fig = px.area(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
                   labels={'EndDate': 'Date', 'Value': 'CPI Value'})
@@ -88,8 +93,8 @@ elif chart_type == 'Area Chart':
 
 elif chart_type == 'Box Plot':
     st.write("""
-    The **box plot** below shows the distribution of CPI values across different months. This chart is helpful for identifying seasonal patterns and outliers in the data, 
-    as well as the spread of CPI values throughout the year.
+    The **box plot** below shows the distribution of CPI values across different months, filtered by the selected CPI value range.
+    This chart is helpful for identifying seasonal patterns and outliers in the data, as well as the spread of CPI values throughout the year.
     """)
     # Ensure the correct chronological order of months
     month_order = ['January', 'February', 'March', 'April', 'May', 'June',
@@ -108,7 +113,7 @@ elif chart_type == 'Box Plot':
 
 elif chart_type == 'Pie Chart':
     st.write("""
-    The **pie chart** below shows the distribution of CPI values across different months for the most recent year. This chart helps visualize how inflation was distributed over the year.
+    The **pie chart** below shows the distribution of CPI values across different months for the most recent year, filtered by the selected CPI value range.
     """)
     # Filter the dataset to include data from the most recent year available
     latest_year = filtered_data['Year'].max()
@@ -137,13 +142,11 @@ if fig is not None:
 else:
     st.write("No chart is available for the selected options. Please adjust the filters.")
 
-# Key Insights Section (Restored)
+# Key Insights Section
 st.subheader("Key Insights:")
-st.write("""
+st.write(f"""
+- **CPI Range Filtering**: The data displayed is filtered to show only CPI values between {min_cpi:.2f} and {max_cpi:.2f}. This allows you to focus on specific ranges of inflation.
 - **Long-term Trend**: Over the selected years, you can observe whether food price inflation has been gradually rising, stabilizing, or fluctuating. This can be correlated with external factors such as economic downturns, global events, or changes in food supply.
 - **Seasonal Patterns**: By focusing on specific months, such as peak harvest or holiday seasons, you can explore how food prices behave annually. Typically, inflationary pressures may rise during certain months due to higher demand or supply chain constraints.
 - **Economic Impact**: Sharp increases in food prices may be indicative of inflationary pressure in the broader economy. Observing how food prices change compared to general CPI can provide clues about the impact on household spending and overall economic health.
-- **Short-term Shocks**: Sudden spikes in food price inflation may indicate short-term supply chain disruptions, such as natural disasters, political instability, or pandemics. These can cause temporary but significant price changes.
-- **Regional Comparisons**: Although this dataset focuses on overall food inflation, it can provide a foundation for comparing regional or global inflation trends and how external factors influence different regions.
-- **Impact of Policies**: Changes in food subsidies, tariffs, or trade policies may reflect in price inflation. Identifying sharp changes in CPI after major policy announcements can provide insight into the effectiveness of these measures.
 """)

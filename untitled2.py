@@ -2,8 +2,6 @@
 """
 Created on Wed Sep 18 21:12:27 2024
 
-@author: perla
-"""
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -28,6 +26,13 @@ def load_data():
     return data
 
 df = load_data()
+
+# Dynamic Theme Switching
+theme = st.sidebar.radio("Select Theme", ["Light", "Dark"])
+
+# Apply selected theme
+if theme == "Dark":
+    st.write('<style>body{background-color: #1e1e1e; color: #fff;}</style>', unsafe_allow_html=True)
 
 # Page Title and Intro
 st.title("Interactive Visualizations: Food Price Inflation")
@@ -140,6 +145,22 @@ if fig is not None:
     st.plotly_chart(fig)
 else:
     st.write("No chart is available for the selected options. Please adjust the filters.")
+
+# Downloadable Report Section
+@st.cache_data
+def convert_df_to_csv(df):
+    return df.to_csv(index=False).encode('utf-8')
+
+csv = convert_df_to_csv(filtered_data)
+
+st.download_button(
+    label="Download filtered data as CSV",
+    data=csv,
+    file_name='filtered_food_price_inflation_data.csv',
+    mime='text/csv',
+)
+
+
 
 # Key Insights Section
 st.subheader("Key Insights:")

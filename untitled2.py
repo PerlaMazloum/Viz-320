@@ -49,7 +49,7 @@ month_options = df['Month'].unique()
 selected_month = st.sidebar.multiselect("Select Month(s)", month_options, default=month_options)
 
 # Chart type selector
-chart_type = st.sidebar.selectbox("Select Chart Type", ['Line Chart', 'Bar Chart', 'Area Chart'])
+chart_type = st.sidebar.selectbox("Select Chart Type", ['Line Chart', 'Bar Chart', 'Area Chart', 'Box Plot', 'Pie Chart'])
 
 # Filter data based on the selections
 filtered_data = df[(df['Year'].between(year_range[0], year_range[1])) & (df['Month'].isin(selected_month))]
@@ -57,34 +57,64 @@ filtered_data = df[(df['Year'].between(year_range[0], year_range[1])) & (df['Mon
 # Customized context based on the chart type
 st.subheader(f"Food Price Inflation Data from {year_range[0]} to {year_range[1]}")
 if chart_type == 'Line Chart':
-    st.write(f"""
+    st.write("""
     The **line chart** below shows the food price inflation trends over time. Line charts are ideal for observing trends and fluctuations in food prices, 
     helping you visualize how inflation has progressed across different months and years. This chart will highlight both subtle and major shifts in CPI values.
     """)
 elif chart_type == 'Bar Chart':
-    st.write(f"""
+    st.write("""
     The **bar chart** provides a comparison of food price inflation values over the selected period. Bar charts are useful when comparing CPI values for different time frames, 
     making it easy to see which months or years have experienced higher inflation. The height of each bar reflects the magnitude of the price increase.
     """)
-else:  # Area chart
-    st.write(f"""
+elif chart_type == 'Area Chart':
+    st.write("""
     The **area chart** below shows the cumulative food price inflation over time. It is particularly useful for showing the total inflationary pressure built over the years. 
     This type of chart emphasizes the magnitude of the inflation, making it easier to see which time periods contributed the most to cumulative price increases.
     """)
+elif chart_type == 'Box Plot':
+    st.write("""
+    The **box plot** below shows the distribution of CPI values across different months. This chart is helpful for identifying seasonal patterns and outliers in the data, 
+    as well as the spread of CPI values throughout the year.
+    """)
+    
+    # Ensure the correct chronological order of months
+    month_order = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+    
+    # Convert the 'Month' column to a categorical type with the defined order
+    filtered_data['Month'] = pd.Categorical(filtered_data['Month'], categories=month_order, ordered=True)
+    
+    # Sort the DataFrame by the ordered months
+    filtered_data = filtered_data.sort_values(by='Month')
+    
+    # Create the box plot
+    fig = px.box(filtered_data, x='Month', y='Value', title='Box Plot of CPI Distribution by Month',
+                 labels={'Month': 'Month', 'Value': 'CPI Value'})
+elif chart_type == 'Pie Chart':
+    st.write("""
+    The **pie chart** below shows the distribution of CPI values across different months for the most recent year. This chart helps visualize how inflation was distributed over the year.
+    """)
+    
+    # Filter the dataset to include data from the most recent year available
+    latest_year = filtered_data['Year'].max()
+    df_latest_year = filtered_data[filtered_data['Year'] == latest_year]
+    
+    # Group data by Month to get the total CPI for each month
+    df_latest_year_grouped = df_latest_year.groupby('Month', as_index=False).agg({'Value': 'sum'})
+    
+    # Sort by CPI values for better clarity in color assignment
+    df_latest_year_grouped = df_latest_year_grouped.sort_values(by='Value', ascending=False)
+    
+    # Create a pie chart to show CPI distribution by month
+    fig = px.pie(df_latest_year_grouped, 
+                 values='Value', 
+                 names='Month', 
+                 title=f'CPI Distribution by Month for {latest_year}',
+                 color='Value',
+                 color_discrete_sequence=px.colors.sequential.Viridis)
 
-# Display the filtered data
-st.write(f"Displaying data for Food Price Inflation between {year_range[0]} and {year_range[1]} for the months: {', '.join(selected_month)}")
-
-# Choose chart type based on user input
-if chart_type == 'Line Chart':
-    fig = px.line(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
-                  labels={'EndDate': 'Date', 'Value': 'CPI Value'}, markers=True)
-elif chart_type == 'Bar Chart':
-    fig = px.bar(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
-                 labels={'EndDate': 'Date', 'Value': 'CPI Value'})
-else:  # Area chart
-    fig = px.area(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
-                  labels={'EndDate': 'Date', 'Value': 'CPI Value'})
+    # Update hover information
+    fig.update_traces(hovertemplate='Month: %{label}<br>CPI Value: %{value:.2f}')
 
 # Show the chart
 st.plotly_chart(fig)

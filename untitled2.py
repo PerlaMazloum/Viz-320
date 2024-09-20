@@ -51,68 +51,78 @@ selected_month = st.sidebar.multiselect("Select Month(s)", month_options, defaul
 # Chart type selector
 chart_type = st.sidebar.selectbox("Select Chart Type", ['Line Chart', 'Bar Chart', 'Area Chart', 'Box Plot', 'Pie Chart'])
 
+# Aggregation type selector
+aggregation_type = st.sidebar.selectbox("Select Aggregation Type", ['Sum', 'Average', 'Median'])
+
 # Filter data based on the selections
 filtered_data = df[(df['Year'].between(year_range[0], year_range[1])) & (df['Month'].isin(selected_month))]
 
+# Group the data based on the selected aggregation type
+if aggregation_type == 'Sum':
+    grouped_data = filtered_data.groupby(['Month', 'Year'], as_index=False).agg({'Value': 'sum'})
+elif aggregation_type == 'Average':
+    grouped_data = filtered_data.groupby(['Month', 'Year'], as_index=False).agg({'Value': 'mean'})
+else:
+    grouped_data = filtered_data.groupby(['Month', 'Year'], as_index=False).agg({'Value': 'median'})
+
 # Customized context based on the chart type
-st.subheader(f"Food Price Inflation Data from {year_range[0]} to {year_range[1]}")
+st.subheader(f"Food Price Inflation Data from {year_range[0]} to {year_range[1]} ({aggregation_type})")
 fig = None  # Initialize `fig` to avoid NameError
 
 # Add Interactive Tooltips for each chart type
 if chart_type == 'Line Chart':
-    st.write("""
-    The **line chart** below shows the food price inflation trends over time. Line charts are ideal for observing trends and fluctuations in food prices, 
-    helping you visualize how inflation has progressed across different months and years. This chart will highlight both subtle and major shifts in CPI values.
+    st.write(f"""
+    The **line chart** below shows the food price inflation trends over time, aggregated by {aggregation_type}. 
+    Line charts are ideal for observing trends and fluctuations in food prices, helping you visualize how inflation has progressed across different months and years.
     """)
-    fig = px.line(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
-                  labels={'EndDate': 'Date', 'Value': 'CPI Value'}, markers=True)
-    fig.update_traces(hovertemplate='<b>Date</b>: %{x}<br><b>CPI Value</b>: %{y}')
-    
+    fig = px.line(grouped_data, x='Year', y='Value', color='Month', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]}) - {aggregation_type}',
+                  labels={'Year': 'Year', 'Value': 'CPI Value'})
+    fig.update_traces(hovertemplate='<b>Year</b>: %{x}<br><b>CPI Value</b>: %{y}')
+
 elif chart_type == 'Bar Chart':
-    st.write("""
-    The **bar chart** provides a comparison of food price inflation values over the selected period. Bar charts are useful when comparing CPI values for different time frames, 
-    making it easy to see which months or years have experienced higher inflation. The height of each bar reflects the magnitude of the price increase.
+    st.write(f"""
+    The **bar chart** provides a comparison of food price inflation values over the selected period, aggregated by {aggregation_type}. 
+    Bar charts are useful when comparing CPI values for different time frames, making it easy to see which months or years have experienced higher inflation.
     """)
-    fig = px.bar(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
-                 labels={'EndDate': 'Date', 'Value': 'CPI Value'})
-    fig.update_traces(hovertemplate='<b>Date</b>: %{x}<br><b>CPI Value</b>: %{y}')
+    fig = px.bar(grouped_data, x='Year', y='Value', color='Month', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]}) - {aggregation_type}',
+                 labels={'Year': 'Year', 'Value': 'CPI Value'})
+    fig.update_traces(hovertemplate='<b>Year</b>: %{x}<br><b>CPI Value</b>: %{y}')
 
 elif chart_type == 'Area Chart':
-    st.write("""
-    The **area chart** below shows the cumulative food price inflation over time. It is particularly useful for showing the total inflationary pressure built over the years. 
-    This type of chart emphasizes the magnitude of the inflation, making it easier to see which time periods contributed the most to cumulative price increases.
+    st.write(f"""
+    The **area chart** below shows the cumulative food price inflation over time, aggregated by {aggregation_type}. 
+    It emphasizes the magnitude of the inflation, making it easier to see which time periods contributed the most to cumulative price increases.
     """)
-    fig = px.area(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
-                  labels={'EndDate': 'Date', 'Value': 'CPI Value'})
-    fig.update_traces(hovertemplate='<b>Date</b>: %{x}<br><b>CPI Value</b>: %{y}')
+    fig = px.area(grouped_data, x='Year', y='Value', color='Month', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]}) - {aggregation_type}',
+                  labels={'Year': 'Year', 'Value': 'CPI Value'})
+    fig.update_traces(hovertemplate='<b>Year</b>: %{x}<br><b>CPI Value</b>: %{y}')
 
 elif chart_type == 'Box Plot':
-    st.write("""
-    The **box plot** below shows the distribution of CPI values across different months. This chart is helpful for identifying seasonal patterns and outliers in the data, 
-    as well as the spread of CPI values throughout the year.
+    st.write(f"""
+    The **box plot** below shows the distribution of CPI values across different months, aggregated by {aggregation_type}. This chart is helpful for identifying seasonal patterns and outliers in the data.
     """)
     # Ensure the correct chronological order of months
     month_order = ['January', 'February', 'March', 'April', 'May', 'June',
                    'July', 'August', 'September', 'October', 'November', 'December']
     
     # Convert the 'Month' column to a categorical type with the defined order
-    filtered_data['Month'] = pd.Categorical(filtered_data['Month'], categories=month_order, ordered=True)
+    grouped_data['Month'] = pd.Categorical(grouped_data['Month'], categories=month_order, ordered=True)
     
     # Sort the DataFrame by the ordered months
-    filtered_data = filtered_data.sort_values(by='Month')
+    grouped_data = grouped_data.sort_values(by='Month')
     
     # Create the box plot
-    fig = px.box(filtered_data, x='Month', y='Value', title='Box Plot of CPI Distribution by Month',
+    fig = px.box(grouped_data, x='Month', y='Value', title=f'Box Plot of CPI Distribution by Month ({aggregation_type})',
                  labels={'Month': 'Month', 'Value': 'CPI Value'})
     fig.update_traces(hovertemplate='<b>Month</b>: %{x}<br><b>CPI Value</b>: %{y}')
 
 elif chart_type == 'Pie Chart':
-    st.write("""
-    The **pie chart** below shows the distribution of CPI values across different months for the most recent year. This chart helps visualize how inflation was distributed over the year.
+    st.write(f"""
+    The **pie chart** below shows the distribution of CPI values across different months for the most recent year, aggregated by {aggregation_type}.
     """)
     # Filter the dataset to include data from the most recent year available
-    latest_year = filtered_data['Year'].max()
-    df_latest_year = filtered_data[filtered_data['Year'] == latest_year]
+    latest_year = grouped_data['Year'].max()
+    df_latest_year = grouped_data[grouped_data['Year'] == latest_year]
     
     # Group data by Month to get the total CPI for each month
     df_latest_year_grouped = df_latest_year.groupby('Month', as_index=False).agg({'Value': 'sum'})
@@ -124,7 +134,7 @@ elif chart_type == 'Pie Chart':
     fig = px.pie(df_latest_year_grouped, 
                  values='Value', 
                  names='Month', 
-                 title=f'CPI Distribution by Month for {latest_year}',
+                 title=f'CPI Distribution by Month for {latest_year} ({aggregation_type})',
                  color='Value',
                  color_discrete_sequence=px.colors.sequential.Viridis)
 
@@ -137,13 +147,11 @@ if fig is not None:
 else:
     st.write("No chart is available for the selected options. Please adjust the filters.")
 
-# Key Insights Section (Restored)
+# Key Insights Section
 st.subheader("Key Insights:")
-st.write("""
+st.write(f"""
+- **Aggregation Method**: The data displayed is aggregated by the selected method: {aggregation_type}. This allows you to explore different summaries of the data.
 - **Long-term Trend**: Over the selected years, you can observe whether food price inflation has been gradually rising, stabilizing, or fluctuating. This can be correlated with external factors such as economic downturns, global events, or changes in food supply.
 - **Seasonal Patterns**: By focusing on specific months, such as peak harvest or holiday seasons, you can explore how food prices behave annually. Typically, inflationary pressures may rise during certain months due to higher demand or supply chain constraints.
 - **Economic Impact**: Sharp increases in food prices may be indicative of inflationary pressure in the broader economy. Observing how food prices change compared to general CPI can provide clues about the impact on household spending and overall economic health.
-- **Short-term Shocks**: Sudden spikes in food price inflation may indicate short-term supply chain disruptions, such as natural disasters, political instability, or pandemics. These can cause temporary but significant price changes.
-- **Regional Comparisons**: Although this dataset focuses on overall food inflation, it can provide a foundation for comparing regional or global inflation trends and how external factors influence different regions.
-- **Impact of Policies**: Changes in food subsidies, tariffs, or trade policies may reflect in price inflation. Identifying sharp changes in CPI after major policy announcements can provide insight into the effectiveness of these measures.
 """)

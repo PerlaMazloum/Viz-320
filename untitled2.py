@@ -58,6 +58,7 @@ filtered_data = df[(df['Year'].between(year_range[0], year_range[1])) & (df['Mon
 st.subheader(f"Food Price Inflation Data from {year_range[0]} to {year_range[1]}")
 fig = None  # Initialize `fig` to avoid NameError
 
+# Add Interactive Tooltips for each chart type
 if chart_type == 'Line Chart':
     st.write("""
     The **line chart** below shows the food price inflation trends over time. Line charts are ideal for observing trends and fluctuations in food prices, 
@@ -65,6 +66,8 @@ if chart_type == 'Line Chart':
     """)
     fig = px.line(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
                   labels={'EndDate': 'Date', 'Value': 'CPI Value'}, markers=True)
+    fig.update_traces(hovertemplate='<b>Date</b>: %{x}<br><b>CPI Value</b>: %{y}')
+    
 elif chart_type == 'Bar Chart':
     st.write("""
     The **bar chart** provides a comparison of food price inflation values over the selected period. Bar charts are useful when comparing CPI values for different time frames, 
@@ -72,6 +75,8 @@ elif chart_type == 'Bar Chart':
     """)
     fig = px.bar(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
                  labels={'EndDate': 'Date', 'Value': 'CPI Value'})
+    fig.update_traces(hovertemplate='<b>Date</b>: %{x}<br><b>CPI Value</b>: %{y}')
+
 elif chart_type == 'Area Chart':
     st.write("""
     The **area chart** below shows the cumulative food price inflation over time. It is particularly useful for showing the total inflationary pressure built over the years. 
@@ -79,6 +84,8 @@ elif chart_type == 'Area Chart':
     """)
     fig = px.area(filtered_data, x='EndDate', y='Value', title=f'Food Price Inflation ({year_range[0]} - {year_range[1]})',
                   labels={'EndDate': 'Date', 'Value': 'CPI Value'})
+    fig.update_traces(hovertemplate='<b>Date</b>: %{x}<br><b>CPI Value</b>: %{y}')
+
 elif chart_type == 'Box Plot':
     st.write("""
     The **box plot** below shows the distribution of CPI values across different months. This chart is helpful for identifying seasonal patterns and outliers in the data, 
@@ -97,6 +104,8 @@ elif chart_type == 'Box Plot':
     # Create the box plot
     fig = px.box(filtered_data, x='Month', y='Value', title='Box Plot of CPI Distribution by Month',
                  labels={'Month': 'Month', 'Value': 'CPI Value'})
+    fig.update_traces(hovertemplate='<b>Month</b>: %{x}<br><b>CPI Value</b>: %{y}')
+
 elif chart_type == 'Pie Chart':
     st.write("""
     The **pie chart** below shows the distribution of CPI values across different months for the most recent year. This chart helps visualize how inflation was distributed over the year.
@@ -120,7 +129,7 @@ elif chart_type == 'Pie Chart':
                  color_discrete_sequence=px.colors.sequential.Viridis)
 
     # Update hover information
-    fig.update_traces(hovertemplate='Month: %{label}<br>CPI Value: %{value:.2f}')
+    fig.update_traces(hovertemplate='<b>Month</b>: %{label}<br><b>CPI Value</b>: %{value:.2f}')
 
 # Ensure `fig` is not None before trying to display it
 if fig is not None:

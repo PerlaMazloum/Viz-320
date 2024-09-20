@@ -128,3 +128,13 @@ if fig is not None:
 else:
     st.write("No chart is available for the selected options. Please adjust the filters.")
 
+# Key Insights Section (Restored)
+st.subheader("Key Insights:")
+st.write("""
+- **Long-term Trend**: Over the selected years, you can observe whether food price inflation has been gradually rising, stabilizing, or fluctuating. This can be correlated with external factors such as economic downturns, global events, or changes in food supply.
+- **Seasonal Patterns**: By focusing on specific months, such as peak harvest or holiday seasons, you can explore how food prices behave annually. Typically, inflationary pressures may rise during certain months due to higher demand or supply chain constraints.
+- **Economic Impact**: Sharp increases in food prices may be indicative of inflationary pressure in the broader economy. Observing how food prices change compared to general CPI can provide clues about the impact on household spending and overall economic health.
+- **Short-term Shocks**: Sudden spikes in food price inflation may indicate short-term supply chain disruptions, such as natural disasters, political instability, or pandemics. These can cause temporary but significant price changes.
+- **Regional Comparisons**: Although this dataset focuses on overall food inflation, it can provide a foundation for comparing regional or global inflation trends and how external factors influence different regions.
+- **Impact of Policies**: Changes in food subsidies, tariffs, or trade policies may reflect in price inflation. Identifying sharp changes in CPI after major policy announcements can provide insight into the effectiveness of these measures.
+""")
